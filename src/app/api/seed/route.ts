@@ -106,6 +106,8 @@ export async function POST(request: Request) {
         status: 'active',
         location: 'Lat: 18.9730, Lng: 72.8250',
         geo: createGeoPoint(18.9730, 72.8250),
+        lat: 18.9730,
+        lng: 72.8250,
         severity: 'critical',
         createdAt: tenMinAgo,
         updatedAt: tenMinAgo
@@ -118,6 +120,8 @@ export async function POST(request: Request) {
         status: 'acknowledged',
         location: 'Lat: 18.9730, Lng: 72.8250',
         geo: createGeoPoint(18.9730, 72.8250),
+        lat: 18.9730,
+        lng: 72.8250,
         severity: 'high',
         createdAt: tenMinAgo,
         updatedAt: isoNow,

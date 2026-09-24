@@ -112,6 +112,8 @@ export interface AlertDocument {
   status: AlertStatus;
   location?: string;
   geo?: GeoPoint;
+  lat?: number;
+  lng?: number;
   severity: AlertSeverity;
   userId?: string;
   assignedGuardianId?: string;
@@ -121,6 +123,16 @@ export interface AlertDocument {
   assignedAt?: string;
   escalatedAt?: string;
   resolvedAt?: string;
+}
+
+// Upload Document for persistent photo storage in hosted MongoDB
+export interface UploadDocument {
+  id: string;
+  filename: string;
+  mimeType: string;
+  size: number;
+  data: string; // Base64 encoded binary data
+  uploadedAt: string; // ISO 8601 UTC
 }
 
 // 5. Journey Model

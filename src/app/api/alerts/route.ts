@@ -66,6 +66,8 @@ export async function POST(request: Request) {
       status: 'active',
       location: body.location || (geo ? `Lat: ${body.lat.toFixed(4)}, Lng: ${body.lng.toFixed(4)}` : undefined),
       geo,
+      lat: typeof body.lat === 'number' ? body.lat : undefined,
+      lng: typeof body.lng === 'number' ? body.lng : undefined,
       severity: body.severity || (body.type === 'sos' ? 'critical' : 'medium'),
       userId: body.userId || undefined,
       createdAt: now,

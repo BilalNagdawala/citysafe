@@ -6,26 +6,52 @@ import { ShieldAlert, Activity, Users, Shield, CheckCircle2, MapPin, Bell, Chevr
 import Link from 'next/link';
 import { MapComponent } from '@/components/guardian/MapComponent';
 import { useGuardianData } from '@/providers/GuardianDataProvider';
-import { DEMO_GUARDIAN_PROFILE, DEMO_STATS } from '@/lib/demo-data';
+import { DEMO_GUARDIAN_PROFILE } from '@/lib/demo-data';
+import { isValidLatLng } from '@/lib/geo-utils';
 
 export default function GuardianCommandCenter() {
   const { alerts, reports, profile: storedProfile } = useGuardianData();
   const profile = storedProfile || DEMO_GUARDIAN_PROFILE;
-  const stats = DEMO_STATS;
 
-  // Mock markers for map based on demo data
-  const mapMarkers: any[] = [
-    ...reports.filter(r => r.status !== 'Resolved').map(r => ({
-      id: r.id,
-      lat: r.coordinates.lat,
-      lng: r.coordinates.lng,
-      type: r.severity === 'CRITICAL' || r.severity === 'HIGH' ? 'alert' : 'report',
-      label: r.type
-    })),
-    // A couple of fake NGOs and Guardians for visual interest
-    { id: 'ngo1', lat: 18.9680, lng: 72.8200, type: 'ngo', label: 'Safe Mumbai' },
-    { id: 'g1', lat: 18.9640, lng: 72.8130, type: 'guardian', label: 'Rahul D.' }
+  const stats = {
+    totalReports: reports.length,
+    activeAlerts: alerts.filter((a) => a.status === 'active').length,
+    openCases: reports.filter((r) => r.status === 'Assigned' || r.status === 'New').length,
+    resolvedCases: reports.filter((r) => r.status === 'Resolved').length,
+  };
+
+  // Build markers with strict coordinate validation
+  const mapMarkers = [
+    ...reports
+      .filter((r) => r.status !== 'Resolved' && isValidLatLng(r.coordinates))
+      .map((r) => ({
+        id: r.id,
+        lat: r.coordinates.lat,
+        lng: r.coordinates.lng,
+        type: (r.severity === 'CRITICAL' || r.severity === 'HIGH' ? 'alert' : 'report') as 'alert' | 'report',
+        label: r.type,
+      })),
+    ...alerts
+      .filter((a) => {
+        const lat = a.lat ?? a.latitude;
+        const lng = a.lng ?? a.longitude;
+        return a.status === 'active' && isValidLatLng({ lat, lng });
+      })
+      .map((a) => {
+        const lat = (a.lat ?? a.latitude)!;
+        const lng = (a.lng ?? a.longitude)!;
+        return {
+          id: a.id,
+          lat,
+          lng,
+          type: 'alert' as const,
+          label: a.title || 'SOS Alert',
+        };
+      }),
   ];
+
+  const firstValid = mapMarkers[0];
+  const mapCenter = firstValid ? { lat: firstValid.lat, lng: firstValid.lng } : { lat: 19.0760, lng: 72.8777 };
 
   return (
     <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-6 pt-[calc(16px+env(safe-area-inset-top))]">
@@ -109,7 +135,7 @@ export default function GuardianCommandCenter() {
                 <MapPin size={14} className="text-primary" /> Live Operations Map
               </span>
             </div>
-            <MapComponent center={{ lat: 18.9660, lng: 72.8170 }} zoom={15} height="450px" markers={mapMarkers} />
+            <MapComponent center={mapCenter} zoom={15} height="450px" markers={mapMarkers} />
           </div>
 
           {/* Critical Alerts Below Map */}

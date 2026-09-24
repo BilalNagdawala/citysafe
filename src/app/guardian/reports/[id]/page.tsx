@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, use } from 'react';
+import { useState, use, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { ChevronLeft, MapPin, Clock, ShieldAlert, CheckCircle2, User, Building, MessageSquare, AlertTriangle, Briefcase, Camera, Video, Mic, FileText, Loader2, X } from 'lucide-react';
-import { useGuardianData } from '@/providers/GuardianDataProvider';
+import { useGuardianData, mapIncidentToReport } from '@/providers/GuardianDataProvider';
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -12,10 +12,48 @@ type Props = {
 
 export default function ReportDetailsPage({ params }: Props) {
   const router = useRouter();
-  const { reports, refreshData } = useGuardianData();
+  const { reports, refreshData, isLoading: isProviderLoading } = useGuardianData();
   const { id } = use(params);
   
-  const report = reports.find(r => r.id === id) as any;
+  const [directReport, setDirectReport] = useState<any | null>(null);
+  const [isLoadingReport, setIsLoadingReport] = useState(true);
+
+  // Synchronize from cached reports or fetch directly
+  useEffect(() => {
+    let isMounted = true;
+
+    const cached = reports.find((r) => r.id === id);
+    if (cached) {
+      setDirectReport(cached);
+      setIsLoadingReport(false);
+      return;
+    }
+
+    const fetchDirect = async () => {
+      try {
+        setIsLoadingReport(true);
+        const res = await fetch(`/api/incidents/${id}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.incident && isMounted) {
+            setDirectReport(mapIncidentToReport(data.incident));
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load incident detail directly:', err);
+      } finally {
+        if (isMounted) setIsLoadingReport(false);
+      }
+    };
+
+    fetchDirect();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [id, reports]);
+
+  const report = directReport || reports.find((r) => r.id === id);
 
   const [note, setNote] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -60,6 +98,12 @@ export default function ReportDetailsPage({ params }: Props) {
       // Update successful
       setNote('');
       await refreshData();
+      // Also refresh direct report
+      const refreshRes = await fetch(`/api/incidents/${id}`);
+      if (refreshRes.ok) {
+        const data = await refreshRes.json();
+        if (data.incident) setDirectReport(mapIncidentToReport(data.incident));
+      }
     } catch (err: any) {
       console.error(err);
       setErrorMessage(err.message || 'Action could not be saved due to a network error');
@@ -68,6 +112,18 @@ export default function ReportDetailsPage({ params }: Props) {
       setActiveAction(null);
     }
   };
+
+  if (isLoadingReport && !report) {
+    return (
+      <div className="p-4 md:p-8 max-w-5xl mx-auto space-y-6 pt-[calc(16px+env(safe-area-inset-top))] pb-24 text-center">
+        <GlassCard className="!p-16 border border-[--glass-border] flex flex-col items-center gap-4">
+          <Loader2 size={40} className="text-primary animate-spin" />
+          <h2 className="text-xl font-bold text-foreground">Loading Incident Details...</h2>
+          <p className="text-sm text-muted-fg">Connecting to safety registry for Report #{id}</p>
+        </GlassCard>
+      </div>
+    );
+  }
 
   if (!report) {
     return (

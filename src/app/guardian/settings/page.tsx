@@ -5,7 +5,7 @@ import { Settings, Bell, Lock, Shield, Map, EyeOff, LogOut } from 'lucide-react'
 import { useRole } from '@/providers/RoleProvider';
 
 export default function SettingsPage() {
-  const { setRole } = useRole();
+  const { signOut } = useRole();
 
   return (
     <div className="p-4 md:p-8 max-w-4xl mx-auto space-y-6 pt-[calc(16px+env(safe-area-inset-top))] pb-20">
@@ -104,8 +104,8 @@ export default function SettingsPage() {
         <div className="pt-4 flex flex-col gap-3">
           <button 
             onClick={() => {
-              setRole('unassigned');
-              window.location.href = '/role-selection';
+              signOut();
+              window.location.href = '/';
             }}
             className="w-full bg-danger/10 hover:bg-danger/20 text-danger border border-danger/20 py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-colors"
           >

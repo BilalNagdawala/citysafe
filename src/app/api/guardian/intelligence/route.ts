@@ -95,17 +95,21 @@ export async function handleIntelligence(request: Request) {
     const hotspotMap = new Map<string, { name: string; count: number; severitySum: number }>();
 
     for (const inc of incidents) {
-      const key = `${inc.lat.toFixed(2)},${inc.lng.toFixed(2)}`;
+      const lat = typeof inc.lat === 'number' ? inc.lat : inc.location?.coordinates?.[1];
+      const lng = typeof inc.lng === 'number' ? inc.lng : inc.location?.coordinates?.[0];
+      if (typeof lat !== 'number' || typeof lng !== 'number' || isNaN(lat) || isNaN(lng)) continue;
+
+      const key = `${lat.toFixed(2)},${lng.toFixed(2)}`;
       if (!hotspotMap.has(key)) {
         hotspotMap.set(key, {
-          name: `Cluster near ${inc.lat.toFixed(3)}, ${inc.lng.toFixed(3)}`,
+          name: `Cluster near ${lat.toFixed(3)}, ${lng.toFixed(3)}`,
           count: 0,
           severitySum: 0,
         });
       }
       const spot = hotspotMap.get(key)!;
       spot.count += 1;
-      spot.severitySum += inc.severity;
+      spot.severitySum += typeof inc.severity === 'number' ? inc.severity : 50;
     }
 
     const hotspots: Array<{

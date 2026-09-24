@@ -76,6 +76,43 @@ interface GuardianDataProps {
   isLoading: boolean;
 }
 
+export const mapIncidentToReport = (inc: any): GuardianReportItem => {
+  const sevNum = typeof inc.severity === 'number' ? inc.severity : 50;
+  const severityStr: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW' =
+    sevNum >= 80 ? 'CRITICAL' : sevNum >= 50 ? 'HIGH' : sevNum >= 25 ? 'MEDIUM' : 'LOW';
+
+  let displayStatus: 'New' | 'Assigned' | 'Resolved' | 'Escalated' | 'Verified' = 'New';
+  if (inc.status === 'RESOLVED') displayStatus = 'Resolved';
+  else if (inc.status === 'ASSIGNED') displayStatus = 'Assigned';
+  else if (inc.status === 'ESCALATED') displayStatus = 'Escalated';
+  else if (inc.status === 'VERIFIED') displayStatus = 'Verified';
+
+  const loc = parseLatLng(inc.location || { lat: inc.lat, lng: inc.lng });
+  const lat = loc ? loc.lat : (typeof inc.lat === 'number' ? inc.lat : NaN);
+  const lng = loc ? loc.lng : (typeof inc.lng === 'number' ? inc.lng : NaN);
+
+  return {
+    id: inc.id,
+    type: inc.category || 'Incident',
+    location: inc.description ? inc.description.slice(0, 60) : (loc ? `Lat: ${lat.toFixed(4)}, Lng: ${lng.toFixed(4)}` : 'Reported Location'),
+    coordinates: {
+      lat,
+      lng,
+    },
+    time: inc.occurredAt || inc.createdAt || new Date().toISOString(),
+    severity: severityStr,
+    description: inc.description || 'No description provided.',
+    evidence: Boolean(inc.photoUrl),
+    imageUrl: inc.photoUrl || undefined,
+    verificationStatus: inc.status === 'VERIFIED' ? 'Verified' : 'Unverified',
+    status: displayStatus,
+    assignedOrg: inc.assignedGuardianId || null,
+    timeline: inc.timeline || [],
+    createdAt: inc.createdAt,
+    updatedAt: inc.updatedAt,
+  };
+};
+
 const GuardianDataContext = createContext<GuardianDataProps | undefined>(undefined);
 
 export function GuardianDataProvider({ children }: { children: React.ReactNode }) {
@@ -87,39 +124,6 @@ export function GuardianDataProvider({ children }: { children: React.ReactNode }
   const [ngos] = useState(DEMO_NGOS);
   const [profile, setProfile] = useState<any | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-
-  const mapIncidentToReport = (inc: any): GuardianReportItem => {
-    const sevNum = typeof inc.severity === 'number' ? inc.severity : 50;
-    const severityStr: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW' =
-      sevNum >= 80 ? 'CRITICAL' : sevNum >= 50 ? 'HIGH' : sevNum >= 25 ? 'MEDIUM' : 'LOW';
-
-    let displayStatus: 'New' | 'Assigned' | 'Resolved' | 'Escalated' | 'Verified' = 'New';
-    if (inc.status === 'RESOLVED') displayStatus = 'Resolved';
-    else if (inc.status === 'ASSIGNED') displayStatus = 'Assigned';
-    else if (inc.status === 'ESCALATED') displayStatus = 'Escalated';
-    else if (inc.status === 'VERIFIED') displayStatus = 'Verified';
-
-    return {
-      id: inc.id,
-      type: inc.category || 'Incident',
-      location: inc.description ? inc.description.slice(0, 60) : 'Reported Location',
-      coordinates: {
-        lat: inc.lat ?? (inc.location?.coordinates ? inc.location.coordinates[1] : 18.969),
-        lng: inc.lng ?? (inc.location?.coordinates ? inc.location.coordinates[0] : 72.819),
-      },
-      time: inc.occurredAt || inc.createdAt || new Date().toISOString(),
-      severity: severityStr,
-      description: inc.description || 'No description provided.',
-      evidence: Boolean(inc.photoUrl),
-      imageUrl: inc.photoUrl || undefined,
-      verificationStatus: inc.status === 'VERIFIED' ? 'Verified' : 'Unverified',
-      status: displayStatus,
-      assignedOrg: inc.assignedGuardianId || null,
-      timeline: inc.timeline || [],
-      createdAt: inc.createdAt,
-      updatedAt: inc.updatedAt,
-    };
-  };
 
   const mapReportsToCases = (reportItems: GuardianReportItem[]): GuardianCaseItem[] => {
     return reportItems
@@ -157,7 +161,16 @@ export function GuardianDataProvider({ children }: { children: React.ReactNode }
         }
 
         if (Array.isArray(data.alerts)) {
-          setAlerts(data.alerts);
+          const normalizedAlerts = data.alerts.map((a: any) => {
+            const loc = parseLatLng(a.geo || { lat: a.lat ?? a.latitude, lng: a.lng ?? a.longitude });
+            return {
+              ...a,
+              lat: loc?.lat ?? (typeof a.lat === 'number' ? a.lat : undefined),
+              lng: loc?.lng ?? (typeof a.lng === 'number' ? a.lng : undefined),
+              time: a.createdAt ? new Date(a.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : (a.time || 'Recently'),
+            };
+          });
+          setAlerts(normalizedAlerts);
         }
 
         if (Array.isArray(data.journeys)) {

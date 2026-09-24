@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { GlassCard } from '@/components/ui/GlassCard';
-import { Shield, Filter, MapPin, Search, ChevronRight, AlertTriangle, FileText, CheckCircle2 } from 'lucide-react';
+import { Shield, Filter, MapPin, Search, ChevronRight, AlertTriangle, FileText, CheckCircle2, Loader2 } from 'lucide-react';
 import { useGuardianData } from '@/providers/GuardianDataProvider';
 
 export default function ReportsFeed() {
@@ -12,7 +12,7 @@ export default function ReportsFeed() {
   
   // Basic filter state
   const [severityFilter, setSeverityFilter] = useState<string>('ALL');
-  const { reports } = useGuardianData();
+  const { reports, isLoading } = useGuardianData();
   
   const filteredReports = reports.filter(r => {
     if (severityFilter !== 'ALL' && r.severity !== severityFilter) return false;
@@ -167,7 +167,14 @@ export default function ReportsFeed() {
           </Link>
         ))}
         
-        {filteredReports.length === 0 && (
+        {isLoading && reports.length === 0 && (
+          <div className="text-center py-16 text-muted-fg flex flex-col items-center gap-3">
+            <Loader2 size={36} className="text-primary animate-spin" />
+            <p className="font-bold text-sm">Retrieving safety reports from registry...</p>
+          </div>
+        )}
+
+        {!isLoading && filteredReports.length === 0 && (
           <div className="text-center py-12 text-muted-fg">
             <Shield size={48} className="mx-auto mb-4 opacity-20" />
             <p className="font-bold">No reports found matching filters.</p>

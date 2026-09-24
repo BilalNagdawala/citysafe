@@ -1,60 +1,59 @@
 import { MongoClient, Db } from 'mongodb';
 
-// Ensure MongoDB URI is only read on the server side
-const uri = process.env.MONGODB_URI;
 const dbName = process.env.MONGODB_DB || 'citysafe';
-
-if (!uri) {
-  // Clear configuration error without logging any connection strings
-  console.warn('⚠️ MONGODB_URI is not defined in environment variables. Please check .env.local.');
-}
-
-let client: MongoClient | null = null;
-let clientPromise: Promise<MongoClient>;
 
 declare global {
   // eslint-disable-next-line no-var
   var _mongoClientPromise: Promise<MongoClient> | undefined;
 }
 
-if (!process.env.MONGODB_URI) {
-  // Provide deferred rejected promise if missing, handled gracefully in getDatabase()
-  clientPromise = Promise.reject(new Error('MONGODB_URI is not configured in .env.local'));
-} else if (process.env.NODE_ENV === 'development') {
-  // In development mode, use a global variable so that the value
-  // is preserved across module reloads caused by HMR (Hot Module Replacement).
+/**
+ * Validates connection string safety for the current environment.
+ */
+function checkUriConfiguration(uri: string): { isLocalhost: boolean; isAtlas: boolean } {
+  const isLocalhost = uri.includes('localhost') || uri.includes('127.0.0.1');
+  const isAtlas = uri.startsWith('mongodb+srv://') || uri.includes('.mongodb.net');
+  return { isLocalhost, isAtlas };
+}
+
+/**
+ * Returns the cached MongoClient promise.
+ * Reuses connection across warm serverless function invocations on Vercel.
+ */
+export async function getMongoClient(): Promise<MongoClient> {
+  const uri = process.env.MONGODB_URI;
+
+  if (!uri || !uri.trim()) {
+    throw new Error(
+      'Database configuration missing: MONGODB_URI is not set. Please set MONGODB_URI in environment variables (use MongoDB Atlas for Vercel production).'
+    );
+  }
+
+  const isProduction = process.env.NODE_ENV === 'production' || process.env.VERCEL === '1';
+  const { isLocalhost } = checkUriConfiguration(uri);
+
+  if (isProduction && isLocalhost) {
+    throw new Error(
+      'Invalid database configuration: MONGODB_URI points to localhost/127.0.0.1. Vercel serverless functions cannot connect to your local machine. Please configure a hosted MongoDB connection string (e.g. MongoDB Atlas) in your Vercel Project Environment Variables.'
+    );
+  }
+
   if (!global._mongoClientPromise) {
-    client = new MongoClient(uri!, {
+    const client = new MongoClient(uri, {
       maxPoolSize: 10,
       serverSelectionTimeoutMS: 5000,
       connectTimeoutMS: 10000,
     });
     global._mongoClientPromise = client.connect();
   }
-  clientPromise = global._mongoClientPromise;
-} else {
-  // In production mode, it's best to not use a global variable.
-  client = new MongoClient(uri!, {
-    maxPoolSize: 20,
-    serverSelectionTimeoutMS: 5000,
-    connectTimeoutMS: 10000,
-  });
-  clientPromise = client.connect();
-}
 
-/**
- * Returns the cached MongoClient promise.
- */
-export async function getMongoClient(): Promise<MongoClient> {
-  if (!process.env.MONGODB_URI) {
-    throw new Error('Database configuration missing: MONGODB_URI is not set.');
-  }
   try {
-    return await clientPromise;
+    return await global._mongoClientPromise;
   } catch (error: any) {
-    throw new Error(
-      `Failed to connect to local MongoDB. Ensure MongoDB service is running on 127.0.0.1:27017. Details: ${error.message}`
-    );
+    // Reset promise so subsequent requests can retry connecting
+    global._mongoClientPromise = undefined;
+    const sanitizedError = error?.message?.replace(/mongodb(\+srv)?:\/\/[^@]+@/i, 'mongodb$1://***:***@') || 'Unknown error';
+    throw new Error(`Failed to connect to MongoDB: ${sanitizedError}`);
   }
 }
 
@@ -108,10 +107,13 @@ export async function ensureIndexes(): Promise<void> {
     await db.collection('caseNotes').createIndex({ reportId: 1, createdAt: -1 });
     await db.collection('auditLogs').createIndex({ entityId: 1, timestamp: -1 });
 
+    // 7. Persistent Uploads collection
+    await db.collection('uploads').createIndex({ id: 1 }, { unique: true });
+    await db.collection('uploads').createIndex({ filename: 1 });
+    await db.collection('uploads').createIndex({ uploadedAt: -1 });
+
     indexesInitialized = true;
   } catch (err: any) {
-    console.error('Failed to initialize database indexes:', err.message);
+    console.error('Failed to initialize database indexes:', err?.message || err);
   }
 }
-
-export default clientPromise;
