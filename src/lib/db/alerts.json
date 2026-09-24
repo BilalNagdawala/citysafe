@@ -1,0 +1,71 @@
+[
+  {
+    "id": "alt-1790174203519-fc1b",
+    "type": "sos",
+    "title": "SOS Triggered",
+    "description": "User activated SOS from their device.",
+    "status": "active",
+    "location": "Location unavailable",
+    "createdAt": "2026-09-23T14:36:43.535Z",
+    "updatedAt": "2026-09-23T14:36:43.535Z",
+    "severity": "critical"
+  },
+  {
+    "id": "alt-1790148466928-e694",
+    "type": "incident",
+    "title": "High Severity: Theft",
+    "description": "A severe incident was reported in this area.",
+    "status": "active",
+    "location": "Lat: 18.9682, Lng: 72.8311",
+    "createdAt": "2026-09-23T07:27:46.928Z",
+    "updatedAt": "2026-09-23T07:27:46.928Z",
+    "severity": "high"
+  },
+  {
+    "id": "alt-1790148119613-2328",
+    "type": "incident",
+    "title": "High Severity: Harassment",
+    "description": "A severe incident was reported in this area.",
+    "status": "acknowledged",
+    "location": "Lat: 18.9682, Lng: 72.8311",
+    "createdAt": "2026-09-23T07:21:59.613Z",
+    "updatedAt": "2026-09-23T07:21:59.613Z",
+    "severity": "high"
+  },
+  {
+    "id": "alt-1790103007771-2c21",
+    "type": "incident",
+    "title": "High Severity: Harassment",
+    "description": "A severe incident was reported in this area.",
+    "status": "acknowledged",
+    "location": "Lat: 18.9688, Lng: 72.8287",
+    "timestamp": "2026-09-22T18:50:07.772Z",
+    "severity": "high",
+    "createdAt": "2026-09-22T18:50:07.772Z",
+    "updatedAt": "2026-09-22T18:50:07.772Z"
+  },
+  {
+    "id": "alt-1",
+    "type": "sos",
+    "title": "SOS Triggered - Sneha Desai",
+    "description": "Active SOS near Grant Road Station. User has not moved for 5 minutes.",
+    "status": "acknowledged",
+    "location": "Grant Road, Mumbai",
+    "timestamp": "2026-09-22T18:43:56.258Z",
+    "severity": "critical",
+    "createdAt": "2026-09-22T18:43:56.258Z",
+    "updatedAt": "2026-09-22T18:43:56.258Z"
+  },
+  {
+    "id": "alt-2",
+    "type": "incident",
+    "title": "High Severity Incident Reported",
+    "description": "Group of men loitering near unlit pathway.",
+    "status": "acknowledged",
+    "location": "Tardeo Alley, Mumbai",
+    "timestamp": "2026-09-22T18:33:56.258Z",
+    "severity": "high",
+    "createdAt": "2026-09-22T18:33:56.258Z",
+    "updatedAt": "2026-09-22T18:33:56.258Z"
+  }
+]

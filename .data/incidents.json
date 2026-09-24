@@ -1,0 +1,86 @@
+[
+  {
+    "category": "Harassment",
+    "severity": 88,
+    "description": "",
+    "lat": 18.968719704361288,
+    "lng": 72.82856340616448,
+    "isAnonymous": true,
+    "id": "inc_1789584663065_byu4heh",
+    "timestamp": "2026-09-16T18:51:03.065Z",
+    "status": "RESOLVED",
+    "confidence": 30,
+    "occurredAt": "2026-09-16T18:51:03.065Z",
+    "createdAt": "2026-09-16T18:51:03.065Z",
+    "updatedAt": "2026-09-23T07:28:05.907Z",
+    "timeline": [
+      {
+        "action": "Resolved",
+        "timestamp": "2026-09-23T07:28:05.902Z"
+      }
+    ]
+  },
+  {
+    "category": "Harassment",
+    "severity": 98,
+    "description": "",
+    "lat": 18.96877820288897,
+    "lng": 72.82866146805635,
+    "isAnonymous": false,
+    "id": "inc_1790103007770_gnfx27k",
+    "timestamp": "2026-09-22T18:50:07.770Z",
+    "status": "PENDING",
+    "confidence": 60,
+    "occurredAt": "2026-09-22T18:50:07.770Z",
+    "createdAt": "2026-09-22T18:50:07.770Z",
+    "updatedAt": "2026-09-22T18:50:07.770Z"
+  },
+  {
+    "category": "Harassment",
+    "severity": 100,
+    "description": "",
+    "lat": 18.968180377682405,
+    "lng": 72.83114404635194,
+    "isAnonymous": true,
+    "occurredAt": "2026-09-23T07:21:00.000Z",
+    "photoUrl": "/api/uploads/1790148117951-7d743f04.jpg",
+    "photoStorageKey": "1790148117951-7d743f04.jpg",
+    "photoMimeType": "image/jpeg",
+    "photoUploadedAt": "2026-09-23T07:21:58.010Z",
+    "id": "inc_1790148119609_pj8lbmq",
+    "createdAt": "2026-09-23T07:21:59.609Z",
+    "updatedAt": "2026-09-23T07:21:59.609Z",
+    "status": "PENDING",
+    "confidence": 30,
+    "timeline": [
+      {
+        "action": "Report Submitted",
+        "timestamp": "2026-09-23T07:21:59.609Z"
+      }
+    ]
+  },
+  {
+    "category": "Theft",
+    "severity": 100,
+    "description": "",
+    "lat": 18.968180377682405,
+    "lng": 72.83114404635194,
+    "isAnonymous": false,
+    "occurredAt": "2026-09-23T07:27:00.000Z",
+    "photoUrl": "/api/uploads/1790148466831-b8b6e91d.jpg",
+    "photoStorageKey": "1790148466831-b8b6e91d.jpg",
+    "photoMimeType": "image/jpeg",
+    "photoUploadedAt": "2026-09-23T07:27:46.834Z",
+    "id": "inc_1790148466914_2yk24ws",
+    "createdAt": "2026-09-23T07:27:46.914Z",
+    "updatedAt": "2026-09-23T07:27:46.914Z",
+    "status": "PENDING",
+    "confidence": 60,
+    "timeline": [
+      {
+        "action": "Report Submitted",
+        "timestamp": "2026-09-23T07:27:46.914Z"
+      }
+    ]
+  }
+]
